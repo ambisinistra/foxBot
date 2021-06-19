@@ -20,10 +20,12 @@ import datetime
 from aiogram.utils.callback_data import CallbackData
 from aiogram.types import ContentType, InlineKeyboardButton, InlineKeyboardMarkup
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(filename="logs.log", level=logging.DEBUG)
 #Still in beta. Logging in debug mode
 
 from aiogram.dispatcher.filters import BoundFilter
+from settings import TOKEN
+
 class MyFilter(BoundFilter):
     key = 'is_admin'
 
@@ -37,7 +39,6 @@ class MyFilter(BoundFilter):
 KICKING = False
 REPORTING = True
 USERS_TO_REPORT = [410584052, 36135371]
-TOKEN = "648522503:AAHjE3axKhIWKRHayFhGDfxJoGSUy9Bwzmk"
 bot = aiogram.Bot(token=TOKEN)
 dp = aiogram.Dispatcher(bot)
 
