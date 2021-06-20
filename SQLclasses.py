@@ -45,7 +45,7 @@ class SQLdb():
         self.connection.close()
         
 class SQLmessages(SQLdb):
-    def __init__(self, database_name="messages"):
+    def __init__(self, database_name="messages.db"):
         super().__init__(database_name=database_name, message_id="integer", chat_id="integer",
                         begin_date="datetime", message_text="text", message_type="text")
     
@@ -84,7 +84,7 @@ class SQLmessages(SQLdb):
         return (result)
 
 class SQLchatsGreatings(SQLdb):
-    def __init__(self, database_name="welcome_animations"):
+    def __init__(self, database_name="welcome_animations.db"):
         super().__init__(database_name=database_name, chat_id="integer", animation_link="text", welcome_message="text", capcha="bool", begin_date="datetime")
     
     def delete_record(self, chat_id: int):
@@ -117,7 +117,7 @@ class SQLchatsGreatings(SQLdb):
         return (last_record)
 
 class SQLmembers(SQLdb):
-    def __init__(self, database_name="members"):
+    def __init__(self, database_name="members.db"):
         super().__init__(database_name=database_name, chat_id="int", user_id="int", status="text", message_id="int", begin_date="datetime")
 
     def add_member(self, chat_id:int, user_id:int, status:str, message_id:int):
