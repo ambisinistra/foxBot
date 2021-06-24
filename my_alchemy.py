@@ -1,11 +1,12 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
 #from sqlalchemy.sql.sqltypes import Boolean
 from sqlalchemy import create_engine
  
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship, backref
+from sqlalchemy.sql.schema import ForeignKey
 from settings import SQL_ENGINE
 
 Base = declarative_base()
@@ -19,7 +20,33 @@ class tg_chats(Base):
     animation_link = Column(String)
     welcome_message = Column(String)
     capcha = Column(Boolean)
-    begin_date = Column(DateTime)
+
+    tg_members = relationship("tg_members", back_populates="tg_chats")
+
+    create_time = Column(DateTime, default=datetime.now)
+    update_time = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
+
+class tg_members(Base):
+
+    __tablename__ =  "members.db"
+
+    inner_id = Column(Integer, unique=True, primary_key=True, autoincrement=True)
+    chat_id = Column(Integer, ForeignKey(tg_chats.chat_id), nullable=True)
+    user_id = Column(Integer)
+    status = Column(String)
+
+    # primaryjoin="User.id == Post.user_id"
+
+    tg_chats = relationship("tg_chats", back_populates="tg_members")
+    tg_messages_chat_id = relationship("tg_messages", foreign_keys=[chat_id], back_populates="tg_members", 
+                                    primaryjoin="tg_members.chat_id == tg_messages.chat_id")
+    tg_messages_user_id = relationship("tg_messages", foreign_keys=[user_id], back_populates="tg_members",
+                                    primaryjoin="tg_members.user_id == tg_messages.user_id")
+
+    create_time = Column(DateTime, default=datetime.now)
+    update_time = Column(DateTime, default=datetime.now, onupdate=datetime.now)
+
 
 class tg_messages(Base):
 
@@ -27,27 +54,23 @@ class tg_messages(Base):
 
     inner_id = Column(Integer, unique=True, primary_key=True, autoincrement=True)
     message_id = Column(Integer)
-    chat_id = Column(Integer)
-    begin_date = Column(DateTime)
+    chat_id = Column(Integer, ForeignKey(tg_members.chat_id), nullable=True)
+    user_id = Column(Integer, ForeignKey(tg_members.user_id), nullable=True)
     message_text = Column(String)
     message_status = Column(String)
+
+    tg_member_chat_id = relationship("tg_members", foreign_keys=[chat_id], back_populates="tg_messages",
+                                    primaryjoin="tg_messages.chat_id == tg_members.chat_id")
+    tg_member_user_id = relationship("tg_members", foreign_keys=[user_id], back_populates="tg_messages",
+                                    primaryjoin="tg_messages.user_id == tg_members.user_id")
+
+    create_time = Column(DateTime, default=datetime.now)
+    update_time = Column(DateTime, default=datetime.now, onupdate=datetime.now)
     
 
-class tg_members(Base):
-
-    __tablename__ =  "members.db"
-
-    inner_id = Column(Integer, unique=True, primary_key=True, autoincrement=True)
-    chat_id = Column(Integer)
-    user_id = Column(Integer)
-    status = Column(String)
-    message_id = Column(String)
-    begin_date = Column(String)
-
-
-engine = create_engine(SQL_ENGINE)
-session = sessionmaker()
-session.configure(bind=engine)
+engine = create_engine(SQL_ENGINE, echo=True)
+Session = sessionmaker()
+Session.configure(bind=engine)
 Base.metadata.create_all(engine)
 
 class SQLchatGreatings():
